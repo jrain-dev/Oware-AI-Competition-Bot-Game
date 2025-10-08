@@ -1,0 +1,9 @@
+Episode,Winner,Final_Score_P0,Final_Score_P1,Exploration_Rate
+QF1,QLearningAgent,,,0.996005996001
+QF2,RandomAgent,,,
+QF3,RandomAgent,,,
+QF4,QLearningAgent,,,0.994014980014994
+QF5,QLearningAgent,,,0.994014980014994
+SF1,RandomAgent,,,
+SF2,QLearningAgent,,,0.9900448802097482
+Final,RandomAgent,,,
