@@ -16,7 +16,6 @@ def play_match(agent0, agent1, best_of=3):
         state = board.reset()
         done = False
 
-        # Reset QLearningAgent episode state if needed
         if hasattr(agent0, "end_episode"):
             agent0.end_episode()
         if hasattr(agent1, "end_episode"):
@@ -40,20 +39,17 @@ def play_match(agent0, agent1, best_of=3):
         elif board.winner == 1:
             wins[1] += 1
 
-        # End episode for both agents
         if hasattr(agent0, "end_episode"):
             agent0.end_episode()
         if hasattr(agent1, "end_episode"):
             agent1.end_episode()
 
-        # Early exit if one agent already won majority
         if max(wins) > best_of // 2:
             break
     return 0 if wins[0] > wins[1] else 1
 
 def run_tournament():
-    # Create 5 QLearningAgents and 5 RandomAgents
-    # Create contestants and assign unique IDs and types
+    # 5 QLearningAgents and 5 RandomAgents
     raw_contestants = [QLearningAgent() for _ in range(5)] + [RandomAgent() for _ in range(5)]
     contestants = []
     for idx, agent in enumerate(raw_contestants, start=1):
@@ -64,7 +60,6 @@ def run_tournament():
         })
     random.shuffle(contestants)
 
-    # Use a DataLogger with tournament-specific columns
     columns = [
         "Match",
         "Contestant0_ID",
@@ -85,7 +80,7 @@ def run_tournament():
     ]
     logger = DataLogger(filename="tournament_log.csv", columns=columns, data_keys=data_keys)
 
-    # Quarterfinals: 5 matches, 10 agents
+    # 5 matches, 10 agents
     print("Quarterfinals:")
     qf_winners = []
     for i in range(0, 10, 2):
@@ -105,7 +100,7 @@ def run_tournament():
         })
         print(f"QF{i//2+1}: {c0['type']}({c0['id']}) vs {c1['type']}({c1['id']}) -> {winner['type']}({winner['id']})")
 
-    # Semifinals: 2 matches, 4 agents (pick first 4 winners)
+    # 2 matches, 4 agents 
     print("\nSemifinals:")
     sf_winners = []
     for i in range(0, 4, 2):
@@ -125,7 +120,7 @@ def run_tournament():
         })
         print(f"SF{i//2+1}: {c0['type']}({c0['id']}) vs {c1['type']}({c1['id']}) -> {winner['type']}({winner['id']})")
 
-    # Finals: best of 5
+    # best of 5
     print("\nFinals:")
     c0 = sf_winners[0]
     c1 = sf_winners[1]

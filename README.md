@@ -84,7 +84,7 @@ If you want reproducible contestant shuffles (so IDs map to the same bracket eve
 
 ```python
 import random
-random.seed(42)  # deterministic shuffle and tournament order
+random.seed(42)  
 ```
 
 You can also run the tournament from the command line with the default script:

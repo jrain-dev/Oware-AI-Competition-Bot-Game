@@ -1,8 +1,6 @@
 import numpy as np
 
 class OwareBoard:
-    """Clean Oware board implementation."""
-
     def __init__(self):
         self.reset()
 
