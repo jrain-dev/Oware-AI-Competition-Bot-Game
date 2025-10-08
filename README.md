@@ -68,3 +68,27 @@ Next steps / Ideas
 License
 
 This project is provided as-is for experimentation. Add a license file if you plan to open-source it publicly.
+
+Example tournament log
+
+Here's a short example of what `tournament_log.csv` looks like after a run:
+
+```
+Match,Contestant0_ID,Contestant0_Type,Contestant0_Params,Contestant1_ID,Contestant1_Type,Contestant1_Params,Winner_ID,Winner_Type,Winner_Params
+QF1,C2,QLearningAgent,"{\"learning_rate\":0.1,\"discount_factor\":0.95,\"exploration_rate\":1.0}",C7,RandomAgent,{},C2,QLearningAgent,"{\"learning_rate\":0.1,\"discount_factor\":0.95,\"exploration_rate\":1.0}"
+```
+
+Usage: reproducible tournaments
+
+If you want reproducible contestant shuffles (so IDs map to the same bracket every run), seed Python's RNG before creating contestants. Example — add this near the top of `run_tournament()` in `simulationRunner.py` or call it from your script:
+
+```python
+import random
+random.seed(42)  # deterministic shuffle and tournament order
+```
+
+You can also run the tournament from the command line with the default script:
+
+```bash
+python3 simulationRunner.py
+```
