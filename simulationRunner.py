@@ -53,55 +53,94 @@ def play_match(agent0, agent1, best_of=3):
 
 def run_tournament():
     # Create 5 QLearningAgents and 5 RandomAgents
-    contestants = [QLearningAgent() for _ in range(5)] + [RandomAgent() for _ in range(5)]
+    # Create contestants and assign unique IDs and types
+    raw_contestants = [QLearningAgent() for _ in range(5)] + [RandomAgent() for _ in range(5)]
+    contestants = []
+    for idx, agent in enumerate(raw_contestants, start=1):
+        contestants.append({
+            "id": f"C{idx}",
+            "agent": agent,
+            "type": type(agent).__name__,
+        })
     random.shuffle(contestants)
 
-    logger = DataLogger(filename="tournament_log.csv")
+    # Use a DataLogger with tournament-specific columns
+    columns = [
+        "Match",
+        "Contestant0_ID",
+        "Contestant0_Type",
+        "Contestant1_ID",
+        "Contestant1_Type",
+        "Winner_ID",
+        "Winner_Type",
+    ]
+    data_keys = [
+        "episode",
+        "c0_id",
+        "c0_type",
+        "c1_id",
+        "c1_type",
+        "winner_id",
+        "winner_type",
+    ]
+    logger = DataLogger(filename="tournament_log.csv", columns=columns, data_keys=data_keys)
 
     # Quarterfinals: 5 matches, 10 agents
     print("Quarterfinals:")
     qf_winners = []
     for i in range(0, 10, 2):
-        winner_idx = play_match(contestants[i], contestants[i+1], best_of=3)
-        winner = contestants[i] if winner_idx == 0 else contestants[i+1]
+        c0 = contestants[i]
+        c1 = contestants[i+1]
+        winner_idx = play_match(c0["agent"], c1["agent"], best_of=3)
+        winner = c0 if winner_idx == 0 else c1
         qf_winners.append(winner)
         logger.log_episode({
             "episode": f"QF{i//2+1}",
-            "winner": type(winner).__name__,
-            "score_p0": "",
-            "score_p1": "",
-            "epsilon": getattr(winner, "epsilon", "")
+            "c0_id": c0["id"],
+            "c0_type": c0["type"],
+            "c1_id": c1["id"],
+            "c1_type": c1["type"],
+            "winner_id": winner["id"],
+            "winner_type": winner["type"],
         })
-        print(f"QF{i//2+1}: {type(contestants[i]).__name__} vs {type(contestants[i+1]).__name__} -> {type(winner).__name__}")
+        print(f"QF{i//2+1}: {c0['type']}({c0['id']}) vs {c1['type']}({c1['id']}) -> {winner['type']}({winner['id']})")
 
     # Semifinals: 2 matches, 4 agents (pick first 4 winners)
     print("\nSemifinals:")
     sf_winners = []
     for i in range(0, 4, 2):
-        winner_idx = play_match(qf_winners[i], qf_winners[i+1], best_of=3)
-        winner = qf_winners[i] if winner_idx == 0 else qf_winners[i+1]
+        c0 = qf_winners[i]
+        c1 = qf_winners[i+1]
+        winner_idx = play_match(c0["agent"], c1["agent"], best_of=3)
+        winner = c0 if winner_idx == 0 else c1
         sf_winners.append(winner)
         logger.log_episode({
             "episode": f"SF{i//2+1}",
-            "winner": type(winner).__name__,
-            "score_p0": "",
-            "score_p1": "",
-            "epsilon": getattr(winner, "epsilon", "")
+            "c0_id": c0["id"],
+            "c0_type": c0["type"],
+            "c1_id": c1["id"],
+            "c1_type": c1["type"],
+            "winner_id": winner["id"],
+            "winner_type": winner["type"],
         })
-        print(f"SF{i//2+1}: {type(qf_winners[i]).__name__} vs {type(qf_winners[i+1]).__name__} -> {type(winner).__name__}")
+        print(f"SF{i//2+1}: {c0['type']}({c0['id']}) vs {c1['type']}({c1['id']}) -> {winner['type']}({winner['id']})")
 
     # Finals: best of 5
     print("\nFinals:")
-    winner_idx = play_match(sf_winners[0], sf_winners[1], best_of=5)
-    winner = sf_winners[0] if winner_idx == 0 else sf_winners[1]
+    c0 = sf_winners[0]
+    c1 = sf_winners[1]
+    winner_idx = play_match(c0["agent"], c1["agent"], best_of=5)
+    winner = c0 if winner_idx == 0 else c1
     logger.log_episode({
         "episode": "Final",
-        "winner": type(winner).__name__,
-        "score_p0": "",
-        "score_p1": "",
-        "epsilon": getattr(winner, "epsilon", "")
+        "c0_id": c0["id"],
+        "c0_type": c0["type"],
+        "c1_id": c1["id"],
+        "c1_type": c1["type"],
+        "winner_id": winner["id"],
+        "winner_type": winner["type"],
     })
-    print(f"Final: {type(sf_winners[0]).__name__} vs {type(sf_winners[1]).__name__} -> {type(winner).__name__}")
+    print(f"Final: {c0['type']}({c0['id']}) vs {c1['type']}({c1['id']}) -> {winner['type']}({winner['id']})")
 
     print(f"\nTournament finished. Results saved to {logger.filename}")
 
