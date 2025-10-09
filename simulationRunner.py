@@ -3,11 +3,6 @@ from agents import QLearningAgent, RandomAgent
 from dataLogger import DataLogger
 import random
 
-from owareEngine import OwareBoard
-from agents import QLearningAgent, RandomAgent
-from dataLogger import DataLogger
-import random
-
 def play_match(agent0, agent1, best_of=3):
     wins = [0, 0]
     for _ in range(best_of):
