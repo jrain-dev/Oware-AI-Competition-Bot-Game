@@ -1,10 +1,6 @@
 import numpy as np
 import random
 from collections import defaultdict
-import numpy as np
-import random
-from collections import defaultdict
-
 
 class Agent:
     def select_action(self, state, valid_moves):
