@@ -2,6 +2,9 @@ from owareEngine import OwareBoard
 from agents import QLearningAgent, RandomAgent
 from dataLogger import DataLogger
 import random
+import os
+from oware_ai.metrics import StatsRecorder
+from oware_ai.metrics.stats import MatchRecorder
 
 def play_match(agent0, agent1, best_of=3):
     wins = [0, 0]
@@ -134,7 +137,26 @@ def run_tournament():
 
     print(f"\nTournament finished. Results saved to {logger.filename}")
 
-def run_simulation(episodes=10000):
+def run_simulation(episodes=10000, stats_output=None, enable_stats_csv=False):
+    """
+    Run training simulation with optional stats recording.
+    
+    Args:
+        episodes: Number of episodes to run
+        stats_output: Path for stats file (default: env var STATS_OUTPUT or "./stats.jsonl")
+        enable_stats_csv: Whether to also output CSV format
+    """
+    # Determine stats output path
+    if stats_output is None:
+        stats_output = os.environ.get('STATS_OUTPUT', 'stats.jsonl')
+    
+    # Initialize stats recorder if enabled (empty string disables)
+    stats_recorder = None
+    if stats_output and stats_output != "":
+        stats_recorder = StatsRecorder(stats_output, enable_csv=enable_stats_csv)
+        if stats_recorder.enabled:
+            print(f"Stats recording enabled: {stats_output}")
+    
     board = OwareBoard()
     player0 = QLearningAgent()
     player1 = RandomAgent()
@@ -145,13 +167,51 @@ def run_simulation(episodes=10000):
     for episode in range(episodes):
         state = board.reset()
         done = False
+        
+        # Initialize match recorder if stats are enabled
+        match_recorder = None
+        if stats_recorder and stats_recorder.enabled:
+            match_recorder = MatchRecorder(
+                match_id=f"episode_{episode+1:06d}",
+                agent0_info={
+                    "name": "Player0",
+                    "type": "QLearningAgent",
+                    "params": {
+                        "lr": player0.lr,
+                        "gamma": player0.gamma,
+                        "epsilon": player0.epsilon
+                    }
+                },
+                agent1_info={
+                    "name": "Player1",
+                    "type": "RandomAgent",
+                    "params": {}
+                },
+                seed=None
+            )
+        
+        move_number = 0
 
         while not done:
             current_player_id = board.current_player
             current_agent = agents[current_player_id]
 
             valid_moves = board.get_valid_moves(current_player_id)
-            action = current_agent.select_action(state, valid_moves)
+            
+            # Time the action selection if stats are enabled
+            if match_recorder:
+                with match_recorder.time_move(move_number, current_player_id) as timer:
+                    action = current_agent.select_action(state, valid_moves)
+                
+                metrics = timer.get_metrics(
+                    move_number=move_number,
+                    player=current_player_id,
+                    move_selected=action,
+                    valid_moves=valid_moves
+                )
+                match_recorder.record_move(metrics)
+            else:
+                action = current_agent.select_action(state, valid_moves)
 
             if action is None:
                 break
@@ -161,6 +221,8 @@ def run_simulation(episodes=10000):
             if current_player_id == 0:
                 next_valid_moves = board.get_valid_moves(board.current_player)
                 player0.update(reward, next_state, next_valid_moves)
+            
+            move_number += 1
 
         winner = "Draw"
         if board.winner == 0:
@@ -176,6 +238,15 @@ def run_simulation(episodes=10000):
             "epsilon": player0.epsilon,
         }
         logger.log_episode(episode_summary)
+        
+        # Record match stats if enabled
+        if match_recorder and stats_recorder:
+            final_metrics = match_recorder.finalize(
+                board_state=board.board.tolist(),
+                scores=board.scores,
+                winner=board.winner
+            )
+            stats_recorder.record_match(final_metrics)
 
         player0.end_episode()
 
@@ -185,6 +256,8 @@ def run_simulation(episodes=10000):
             )
 
     print(f"\nSimulation finished. Results saved to {logger.filename}")
+    if stats_recorder and stats_recorder.enabled:
+        print(f"Match statistics saved to {stats_output}")
 
 
 if __name__ == "__main__":
