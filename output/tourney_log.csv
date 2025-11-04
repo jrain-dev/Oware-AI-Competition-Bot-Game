@@ -1,0 +1,8 @@
+episode,agent0_type,agent1_type,winner,agent0_score,agent1_score,total_moves,game_length,agent0_captures,agent1_captures,final_board_seeds,score_difference,winner_margin,agent0_epsilon,agent1_epsilon
+R1_M1,DQNMedium(C7),DQNLarge(C8),DQNMedium(C7),76,57,248,82.7,76,57,N/A,19,19,0.9703725093562657,0.9703725093562657
+R1_M2,MinimaxAgent(C4),DQNSmall(C6),MinimaxAgent(C4),51,0,116,58.0,51,0,N/A,51,51,N/A,0.9801495006250001
+R1_M3,HeuristicAgent(C3),GreedyAgent(C2),GreedyAgent(C2),8,88,88,44.0,8,88,N/A,80,80,N/A,N/A
+R1_M4,QLearningAgent(C5),RandomAgent(C1),RandomAgent(C1),26,52,128,64.0,26,52,N/A,26,26,0.996005996001,N/A
+R2_M1,DQNMedium(C7),MinimaxAgent(C4),DQNMedium(C7),52,10,262,131.0,52,10,N/A,42,42,0.9511101304657719,N/A
+R2_M2,GreedyAgent(C2),RandomAgent(C1),GreedyAgent(C2),55,31,124,62.0,55,31,N/A,24,24,N/A,N/A
+R3_M1,DQNMedium(C7),GreedyAgent(C2),GreedyAgent(C2),33,76,152,50.7,33,76,N/A,43,43,0.9229311239742362,N/A

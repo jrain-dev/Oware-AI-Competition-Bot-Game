@@ -1,11 +1,36 @@
 import numpy as np
 
 class OwareBoard:
-    def __init__(self):
+    def __init__(self, variant="standard"):
+        """
+        OwareBoard supports simple rule variants.
+
+        Variants supported:
+        - "standard": 4 seeds per pit, chain captures allowed (default)
+        - "sparse": 2 seeds per pit, chain captures allowed
+        - "dense": 6 seeds per pit, chain captures allowed
+        - "no_chain": 4 seeds per pit, but only capture the last pit (no backward chaining)
+        """
+        self.variant = variant
+        if variant == "sparse":
+            self.initial_seeds = 2
+            self.capture_chain = True
+        elif variant == "dense":
+            self.initial_seeds = 6
+            self.capture_chain = True
+        elif variant == "no_chain":
+            self.initial_seeds = 4
+            self.capture_chain = False
+        else:
+            self.initial_seeds = 4
+            self.capture_chain = True
+
+        # total seeds used for endgame threshold
+        self.total_seeds = self.initial_seeds * 12
         self.reset()
 
     def reset(self):
-        self.board = np.array([4] * 12, dtype=int)
+        self.board = np.array([self.initial_seeds] * 12, dtype=int)
         self.scores = [0, 0]
         self.current_player = 0
         self.game_over = False
@@ -49,19 +74,32 @@ class OwareBoard:
 
     def _handle_capture(self, last_pit):
         pit = last_pit
+        # check if the last pit is on the opponent's side
         opponent_side = (self.current_player == 0 and 6 <= pit <= 11) or (
             self.current_player == 1 and 0 <= pit <= 5
         )
-        while opponent_side:
-            if self.board[pit] in (2, 3):
+        if not opponent_side:
+            return
+
+        # capture rule: capture if pit has 2 or 3 seeds
+        if self.board[pit] in (2, 3):
+            # capture this pit
+            self.scores[self.current_player] += int(self.board[pit])
+            self.board[pit] = 0
+            if not self.capture_chain:
+                return
+            # if capture_chain is True, continue backward as long as pits are 2 or 3
+            pit = (pit - 1) % 12
+            opponent_side = (self.current_player == 0 and 6 <= pit <= 11) or (
+                self.current_player == 1 and 0 <= pit <= 5
+            )
+            while opponent_side and self.board[pit] in (2, 3):
                 self.scores[self.current_player] += int(self.board[pit])
                 self.board[pit] = 0
                 pit = (pit - 1) % 12
                 opponent_side = (self.current_player == 0 and 6 <= pit <= 11) or (
                     self.current_player == 1 and 0 <= pit <= 5
                 )
-            else:
-                break
 
     def _check_game_over(self):
         if self.scores[0] > 24:
