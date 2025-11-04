@@ -23,11 +23,12 @@ Oware is a traditional African board game from the Mancala family. Two players c
 
 - 🎯 **Multiple AI Strategies**: From simple random moves to sophisticated deep Q-networks
 - 🧠 **Reinforcement Learning**: PyTorch-based DQN agents with experience replay
+- 🚀 **Comprehensive Training**: Advanced training system with progress tracking and checkpoints
 - 🏆 **Tournament System**: Single-elimination tournaments with configurable match formats
 - 📊 **Statistical Analysis**: Comprehensive performance metrics and CSV logging
 - ⚙️ **Game Variants**: Support for different rule variants and board configurations
 - 🎮 **Interactive Menu**: Easy-to-use command-line interface
-- 💾 **Model Persistence**: Save and load trained AI models
+- 💾 **Advanced Checkpoints**: Automatic model saving with versioning and best model tracking
 
 ## Installation
 
@@ -155,13 +156,36 @@ Or via menu option `2: run tournament`
 
 ### Training DQN Agents
 
-Train deep reinforcement learning models:
+The project includes a comprehensive training system for deep reinforcement learning:
 
-1. Select menu option `4: train dqn`
+#### Quick Training
+1. Select menu option `4: train dqn` → `1: Quick Training`
 2. Choose model size (Small/Medium/Large)
-3. Select game variant
-4. Set training episodes
-5. Model checkpoints saved automatically
+3. Configure episodes and game variant
+4. Monitor real-time training progress
+
+#### Advanced Training
+1. Select menu option `4: train dqn` → `2: Advanced Training`
+2. Configure detailed parameters (evaluation intervals, checkpointing, early stopping)
+3. Multi-opponent curriculum learning
+4. Comprehensive metrics and logging
+
+#### Command Line Training
+```bash
+cd actions
+python3 training.py small 2000      # Quick training
+python3 training.py evaluate checkpoint.pth small  # Evaluate model
+python3 training.py list            # List training sessions
+```
+
+Features:
+- **Progress Tracking**: Real-time win rate and loss monitoring
+- **Smart Checkpointing**: Automatic saving of best models with versioning
+- **Multi-Opponent Training**: Curriculum learning against diverse strategies  
+- **Early Stopping**: Automatic termination when no improvement detected
+- **Comprehensive Logging**: Detailed training metrics and session management
+
+See `TRAINING_GUIDE.md` for detailed documentation.
 
 ### Statistical Analysis
 
@@ -183,15 +207,20 @@ Analysis includes:
 ```
 Oware-AI-Competition-Bot-Game/
 ├── owareEngine.py          # Core game engine and board logic
-├── agents.py               # AI agent implementations
+├── agents.py               # AI agent implementations  
 ├── actions/                # Main application modules
 │   ├── menu.py            # Interactive command-line interface
-│   ├── simulation.py      # Game simulation and tournament logic  
-│   └── analysis.py        # Statistical analysis and reporting
-└── output/                # Generated logs and results
-    ├── sim_log.csv        # Simulation results
-    ├── tourney_log.csv    # Tournament results
-    └── analysis_log.csv   # Statistical analysis output
+│   ├── simulation.py      # Game simulation and tournament logic
+│   ├── analysis.py        # Statistical analysis and reporting
+│   └── training.py        # Comprehensive DQN training system
+├── output/                # Generated logs and results
+│   ├── sim_log.csv        # Simulation results
+│   ├── tourney_log.csv    # Tournament results
+│   ├── analysis_log.csv   # Statistical analysis output
+│   └── training/          # Training sessions and model checkpoints
+├── requirements.txt       # Project dependencies
+├── test_training.py       # Training system validation
+└── TRAINING_GUIDE.md      # Detailed training documentation
 ```
 
 ### Key Components

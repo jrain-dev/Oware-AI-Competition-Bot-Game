@@ -242,6 +242,11 @@ if TORCH_AVAILABLE:
             self.buffer = deque(maxlen=buffer_size)
             self.target_update = target_update
             self.step_count = 0
+            
+            # Training metrics
+            self.training_losses = []
+            self.episode_rewards = []
+            self.episode_count = 0
 
         def _state_tensor(self, state):
             x = torch.tensor(state, dtype=torch.float32, device=self.device)
@@ -271,7 +276,7 @@ if TORCH_AVAILABLE:
 
         def train_step(self):
             if len(self.buffer) < self.batch_size:
-                return
+                return None
             batch = _random.sample(self.buffer, self.batch_size)
             states = torch.tensor([b[0] for b in batch], dtype=torch.float32, device=self.device) / 6.0
             actions = torch.tensor([b[1] for b in batch], dtype=torch.long, device=self.device).unsqueeze(1)
@@ -289,14 +294,30 @@ if TORCH_AVAILABLE:
             loss.backward()
             self.opt.step()
 
+            # Track training loss
+            loss_value = loss.item()
+            self.training_losses.append(loss_value)
+            
             self.step_count += 1
             if self.step_count % self.target_update == 0:
                 self.target.load_state_dict(self.net.state_dict())
+                
+            return loss_value
 
         def end_episode(self):
             self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
+            self.episode_count += 1
 
-
+        def get_training_stats(self):
+            """Get training statistics."""
+            return {
+                'episode_count': self.episode_count,
+                'epsilon': self.epsilon,
+                'buffer_size': len(self.buffer),
+                'step_count': self.step_count,
+                'avg_loss': sum(self.training_losses[-100:]) / len(self.training_losses[-100:]) if self.training_losses else 0.0,
+                'recent_losses': self.training_losses[-10:] if self.training_losses else []
+            }
 
         def save_checkpoint(self, path):
             """Save PyTorch model, optimizer state and exploration rate to path."""
@@ -309,6 +330,10 @@ if TORCH_AVAILABLE:
                 'target_state': self.target.state_dict(),
                 'opt_state': self.opt.state_dict(),
                 'epsilon': self.epsilon,
+                'training_stats': self.get_training_stats(),
+                'training_losses': self.training_losses[-1000:],  # Keep last 1000 losses
+                'episode_count': self.episode_count,
+                'step_count': self.step_count
             }, path)
 
         def load_checkpoint(self, path):
@@ -327,6 +352,11 @@ if TORCH_AVAILABLE:
                     # optimizer state may be incompatible across devices/versions; ignore safely
                     pass
             self.epsilon = data.get('epsilon', self.epsilon)
+            # Load training metadata if available
+            self.episode_count = data.get('episode_count', self.episode_count)
+            self.step_count = data.get('step_count', self.step_count)
+            if 'training_losses' in data:
+                self.training_losses = data['training_losses']
 
 
     # Convenience factories for three DQN variants

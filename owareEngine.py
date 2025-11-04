@@ -2,15 +2,7 @@ import numpy as np
 
 class OwareBoard:
     def __init__(self, variant="standard"):
-        """
-        OwareBoard supports simple rule variants.
 
-        Variants supported:
-        - "standard": 4 seeds per pit, chain captures allowed (default)
-        - "sparse": 2 seeds per pit, chain captures allowed
-        - "dense": 6 seeds per pit, chain captures allowed
-        - "no_chain": 4 seeds per pit, but only capture the last pit (no backward chaining)
-        """
         self.variant = variant
         if variant == "sparse":
             self.initial_seeds = 2
